@@ -1,31 +1,33 @@
 import 'dotenv/config';
 import xlsx from 'xlsx';
 import { Message, UserData } from './types';
-import axios from 'axios';
+import fs from 'fs/promises';
+import { sendEmailsWithTemplates } from './sendEmailsWithTemplates';
 
 
 (async () => {
 
-    const workbook = xlsx.readFile('./peru comic con 24   entrada especial.xlsx');
+    const workbook = xlsx.readFile('./peru comic con 24 entrada especial.xlsx');
     const sheetNames = workbook.SheetNames;
     const data: UserData[] = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
 
     console.log('Total mails: ', data.length);
 
     const messages: Message[] = data.map(user => ({
-        From: 'P. Chu Joy <soporte@pchujoy.com>',
+        From: 'P. Chu Joy <info@pchujoy.com>',
         To: user.email,
-        TemplateId: '000000',
-        MessageStream: 'reunion',
-        Tag: 'masivo-comicon-2024',
+        TemplateId: '35310294',
+        MessageStream: 'offer',
+        Tag: 'masivo-suscritos-comicon-abr-2024',
         TemplateModel: {
-            subject: 'subject asombroso',
+            subject: `¡Felicidades ${user.name}, Has ganado un descuento en la compra de tu entrada para la COMICON 2024! 🤩`,
             name: user.name,
+            disccountCode: user.code
         }
     }));
 
     // enviar mails 500 en 500
-    const batches = divideOnBatches(messages, 500);
+    const batches: Message[][] = divideOnBatches(messages, 500);
 
     // enviando emails por batches
     let batchIndex = 1
@@ -33,13 +35,18 @@ import axios from 'axios';
         console.log('Loading batch ', batchIndex);
         console.log('Batch lenght: ', batch.length);
 
-        try {
-            await sendEmailsWithTemplates(batch);
-            batchIndex++;
+        const fileName = `response-batch${batchIndex}.json`;
 
+        try {
+            const response = await sendEmailsWithTemplates(batch);
+
+            await fs.writeFile(fileName, JSON.stringify(response));
+            console.log(`${fileName} CREATED SUCCESSFULLY`);
+
+            batchIndex++;
         } catch (error) {
             if (error instanceof Error) {
-                console.log(`[ERROR ON BATCH ${batchIndex} (${error.name})]: ${error.message}`)
+                // console.log(`[ERROR ON BATCH ${batchIndex} (${error.name})]: ${error.message}`)
             }
 
             process.exit();
@@ -48,19 +55,7 @@ import axios from 'axios';
 
 })()
 
-async function sendEmailsWithTemplates(batch: Message[]) {
-    const response = await axios.post('https://api.postmarkapp.com/email/batchWithTemplates', {
-        Messages: batch
-    }, {
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'X-Postmark-Server-Token': process.env.POSTMARK_SERVER_CLIENT,
-        }
-    })
 
-    console.log('Batch sended successfully', response);
-}
 
 
 function divideOnBatches(array: any[], size: number) {

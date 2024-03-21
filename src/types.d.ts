@@ -10,6 +10,7 @@ export type UserData = {
     companion: string;
     email: string;
     status: number;
+    code: string;
 }
 
 
@@ -18,5 +19,6 @@ export type Message = {
     To: string;
     TemplateId: string;
     Tag: string;
+    MessageStream?: string;
     TemplateModel: { [k: string]: any }
 }
