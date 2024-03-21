@@ -14,15 +14,14 @@ import { sendEmailsWithTemplates } from './sendEmailsWithTemplates';
     console.log('Total mails: ', data.length);
 
     const messages: Message[] = data.map(user => ({
-        From: 'P. Chu Joy <info@pchujoy.com>',
+        From: 'P. Chu Joy <soporte@pchujoy.com>',
         To: user.email,
-        TemplateId: '35310294',
-        MessageStream: 'offer',
-        Tag: 'masivo-suscritos-comicon-abr-2024',
+        TemplateId: '35311262',
+        MessageStream: 'soporte',
+        Tag: 'fe-erratas-comicon-abr-2024',
         TemplateModel: {
-            subject: `¡Felicidades ${user.name}, Has ganado un descuento en la compra de tu entrada para la COMICON 2024! 🤩`,
+            subject: `[FE DE ERRATAS]: Corrección de Correo Electrónico Incorrecto`,
             name: user.name,
-            disccountCode: user.code
         }
     }));
 
@@ -35,18 +34,18 @@ import { sendEmailsWithTemplates } from './sendEmailsWithTemplates';
         console.log('Loading batch ', batchIndex);
         console.log('Batch lenght: ', batch.length);
 
-        const fileName = `response-batch${batchIndex}.json`;
+        const fileName = `response-batch-erratas${batchIndex}.json`;
 
         try {
             const response = await sendEmailsWithTemplates(batch);
 
-            await fs.writeFile(fileName, JSON.stringify(response));
+            await fs.writeFile(fileName, JSON.stringify(response), 'utf-8');
             console.log(`${fileName} CREATED SUCCESSFULLY`);
 
             batchIndex++;
         } catch (error) {
             if (error instanceof Error) {
-                // console.log(`[ERROR ON BATCH ${batchIndex} (${error.name})]: ${error.message}`)
+                console.log(`[ERROR ON BATCH ${batchIndex} (${error.name})]: ${error.message}`)
             }
 
             process.exit();
@@ -54,8 +53,6 @@ import { sendEmailsWithTemplates } from './sendEmailsWithTemplates';
     }
 
 })()
-
-
 
 
 function divideOnBatches(array: any[], size: number) {

@@ -8,7 +8,7 @@ export async function sendEmailsWithTemplates(batch: Message[]) {
         headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'X-Postmark-Server-Token': process.env.POSTMARK_SERVER_CLIENT,
+            'X-Postmark-Server-Token': process.env.POSTMARK_SERVER_CLIENT_SOPORTE,
         }
     })
 
